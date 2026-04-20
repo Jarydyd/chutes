@@ -49,16 +49,46 @@ CHUTES_INFER_BASE = os.environ.get("CHUTES_INFER_BASE", "https://llm.chutes.ai/v
 BETA_PREFIX = "[BETA] "
 
 
+def _manage_credentials_rel() -> Path:
+    return Path("plugins/chutes-ai/skills/chutes-ai/scripts/manage_credentials.py")
+
+
 def _find_manage_credentials() -> Optional[Path]:
-    """Locate manage_credentials.py by walking up from this file."""
+    """Locate manage_credentials.py (dev checkout, uv tool install, or cwd).
+
+    When installed with ``uv tool install``, this file lives under site-packages;
+    walk parents for a repo checkout, or set ``CHUTES_AGENT_TOOLKIT_ROOT`` to the
+    chutes-agent-toolkit clone. Avoids recursive ``**/`` glob (broken symlinks on Windows).
+    """
+    rel = _manage_credentials_rel()
+    for env_name in ("CHUTES_AGENT_TOOLKIT_ROOT", "CHUTES_TOOLKIT_ROOT"):
+        root = os.environ.get(env_name)
+        if root:
+            try:
+                p = Path(root).expanduser().resolve() / rel
+                if p.is_file():
+                    return p
+            except OSError:
+                pass
+
     here = Path(__file__).resolve().parent
     candidate = here.parent.parent / "chutes-ai" / "scripts" / "manage_credentials.py"
-    if candidate.exists():
+    if candidate.is_file():
         return candidate
     for parent in here.parents:
-        found = list(parent.glob("**/manage_credentials.py"))
-        if found:
-            return found[0]
+        try:
+            p = parent / rel
+            if p.is_file():
+                return p
+        except OSError:
+            continue
+
+    try:
+        cwd_candidate = Path.cwd().resolve() / rel
+        if cwd_candidate.is_file():
+            return cwd_candidate
+    except OSError:
+        pass
     return None
 
 

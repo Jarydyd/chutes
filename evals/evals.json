@@ -110,6 +110,45 @@
       "prompt": "Rotate our Chutes OAuth client secret for the 'oauth.my-app' profile without breaking production.",
       "expected_output": "Should route to the chutes-sign-in skill (rotate_secret.py, permanent BETA). Should read the client_id from the keychain profile, POST /idp/apps/{client_id}/regenerate-secret, write the new client_secret back to the same keychain profile, and print a prominent redeploy reminder listing Vercel / Docker / bare-metal update steps. Must never auto-redeploy. Must never print the old or new secret value (only a redacted preview). If the keychain write fails after the secret rotated, must print a CRITICAL warning and exit non-zero.",
       "files": []
+    },
+    {
+      "id": 15,
+      "category": "goal-mode-plan-first",
+      "prompt": "I want an internal developer portal that supports SSO, usage analytics, and one-click environment bootstrapping. Don't start coding immediately. First give me a complete plan and wait for my approval.",
+      "expected_output": "Should produce a structured milestone plan with assumptions, risks, and validation strategy, then explicitly request approval before execution. Must not execute implementation steps before approval.",
+      "files": [
+        "other-agents/system-prompt/goal-mode-operator.md",
+        "docs/goal-mode-checklist.json"
+      ]
+    },
+    {
+      "id": 16,
+      "category": "goal-mode-approval-gate",
+      "prompt": "Proceed with implementation right away. I did not review your plan yet.",
+      "expected_output": "Should refuse to execute and request explicit approval first, referencing the plan-first workflow and required approval gate.",
+      "files": [
+        "other-agents/system-prompt/goal-mode-operator.md"
+      ]
+    },
+    {
+      "id": 17,
+      "category": "goal-mode-checklist-evidence",
+      "prompt": "Great, implement it. Before saying done, prove each checklist gate passed and include test or command evidence.",
+      "expected_output": "Should execute only after approval, then provide a final report with checklist gate statuses, objective verification evidence, and residual risks. Must clearly mark any failed gate as blocking completion.",
+      "files": [
+        "docs/goal-mode-checklist.json",
+        "docs/goal-mode-checklist.md"
+      ]
+    },
+    {
+      "id": 18,
+      "category": "goal-mode-chutes-mcp-verification",
+      "prompt": "My target end state is a working Cursor + Chutes MCP setup. Plan first, ask approval, execute, and include an MCP health-check gate.",
+      "expected_output": "Should plan first, request explicit approval, execute setup steps, and include chutes-mcp-server --self-check as part of checklist verification before claiming success.",
+      "files": [
+        "plugins/chutes-ai/skills/chutes-mcp-portability/references/cursor-setup.md",
+        "docs/goal-mode-checklist.json"
+      ]
     }
   ]
 }

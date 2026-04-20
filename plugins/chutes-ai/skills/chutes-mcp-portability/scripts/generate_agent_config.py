@@ -53,7 +53,12 @@ def cursor_config(out: Path) -> Path:
         "mcpServers": {
             "chutes": {
                 "command": "chutes-mcp-server",
-                "env": {"CHUTES_API_KEY": "${env:CHUTES_API_KEY}"},
+                "env": {
+                    "CHUTES_API_KEY": "${env:CHUTES_API_KEY}",
+                    "CHUTES_FINGERPRINT": "${env:CHUTES_FINGERPRINT}",
+                    "SSL_CERT_FILE": "${env:SSL_CERT_FILE}",
+                    "CHUTES_AGENT_TOOLKIT_ROOT": "${env:CHUTES_AGENT_TOOLKIT_ROOT}",
+                },
             }
         }
     }

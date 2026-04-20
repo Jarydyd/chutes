@@ -158,3 +158,13 @@ After basic setup works, pair this doc with:
 - `docs/credential-store.md`
 
 Those docs define the path from “works now as custom provider” to “should become first-class Hermes support.”
+
+## Symmetric skill tree (repo standard)
+
+Hermes-facing skills live under `other-agents/hermes/skills/` (mirrors the Claude plugin tree). Configure your Hermes build to load that directory (or a copy/symlink you maintain); see your Hermes version’s docs for the exact setting name. Always run shared Python scripts from the **toolkit repo root** with paths like `plugins/chutes-ai/skills/.../scripts/...`.
+
+## Cursor MCP, Claude, and GPT (same account)
+
+- **Cursor MCP**: install `chutes-mcp-server` and generate `.cursor/mcp.json` per [cursor-setup.md](../../plugins/chutes-ai/skills/chutes-mcp-portability/references/cursor-setup.md). On Windows, use [export_chutes_env.ps1](../../scripts/export_chutes_env.ps1) before launching Cursor, or set `CHUTES_API_KEY` / `CHUTES_FINGERPRINT` in the environment Cursor inherits.
+- **Claude Code / Cowork**: install the `chutes-ai` plugin from the marketplace as in the root [README.md](../../README.md).
+- **Custom GPT / generic agents**: paste [other-agents/system-prompt/chutes-agent-prompt.md](../system-prompt/chutes-agent-prompt.md). For OpenAI-compatible clients, see [other-agents/openai-compatible/README.md](../openai-compatible/README.md) and respect the inference auth notes there.

@@ -3,8 +3,8 @@
 Chutes.ai secure credential manager.
 
 Stores secrets in macOS Keychain (primary), Linux secret-tool, or an
-AES-256-GCM encrypted file (fallback). Non-secret metadata lives in
-~/.chutes/config (INI, chmod 600).
+AES-256-GCM encrypted file (fallback; used on Windows when Keychain/Secret
+Service are unavailable). Non-secret metadata lives in ~/.chutes/config (INI, chmod 600).
 
 Commands:
   set-profile   Save or update a full credential profile
@@ -238,13 +238,23 @@ def _secretservice_delete(profile: str):
 # Encrypted file backend (AES-256-GCM fallback)
 # ---------------------------------------------------------------------------
 
+def _platform_user_identity() -> str:
+    """Stable per-user segment for key derivation. POSIX uses uid; Windows has no getuid()."""
+    getuid = getattr(os, "getuid", None)
+    if callable(getuid):
+        return str(getuid())
+    user = os.environ.get("USERNAME") or os.environ.get("USER") or "unknown"
+    domain = os.environ.get("USERDOMAIN", "")
+    return f"win:{domain}:{user}" if domain else f"win:{user}"
+
+
 def _derive_key() -> bytes:
     """Derive an encryption key from machine identity."""
     identity_parts = []
     machine_id_path = Path("/etc/machine-id")
     if machine_id_path.exists():
         identity_parts.append(machine_id_path.read_text().strip())
-    identity_parts.append(str(os.getuid()))
+    identity_parts.append(_platform_user_identity())
     identity_parts.append(os.environ.get("HOME", str(Path.home())))
     identity_parts.append(platform.node())
     combined = "|".join(identity_parts).encode()

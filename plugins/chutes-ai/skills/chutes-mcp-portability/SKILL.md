@@ -58,6 +58,8 @@ pipx install plugins/chutes-ai/skills/chutes-mcp-portability/mcp-server
 
 This gives the user a `chutes-mcp-server` command on PATH. The command reads `CHUTES_API_KEY` from env or falls back to `manage_credentials.py get --field api_key` for inference. For management tools, it uses `CHUTES_FINGERPRINT` or the stored fingerprint to mint a short-lived JWT via `POST /users/login`.
 
+If the server was installed with `uv tool install` and your MCP client’s cwd is not this repo, set **`CHUTES_AGENT_TOOLKIT_ROOT`** to the absolute path of the `chutes-agent-toolkit` clone so the subprocess can find `manage_credentials.py` (Windows-safe; avoids recursive path search).
+
 ### Step 3 — generate configs
 
 ```bash

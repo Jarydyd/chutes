@@ -227,6 +227,9 @@ For CI/CD and headless environments, env vars always take precedence over the st
 | `CHUTES_OAUTH_CLIENT_SECRET` | `client_secret` | preferred name |
 | `CHUTES_CLIENT_SECRET` | `client_secret` | legacy alias, still accepted |
 | `CHUTES_PROFILE` | active profile name | |
+| `CHUTES_AGENT_TOOLKIT_ROOT` | (path) | Absolute path to this repo clone; optional helper so `chutes-mcp-server` (uv tool install) can find `manage_credentials.py` when the process cwd is not the clone |
+
+On Windows, after saving a profile, you can load `CHUTES_API_KEY` / `CHUTES_FINGERPRINT` into the current shell for Cursor or Hermes with: `. .\scripts\export_chutes_env.ps1` (from the repo root). To persist the same values (plus `SSL_CERT_FILE` and `CHUTES_AGENT_TOOLKIT_ROOT`) for Cursor when started from the Start menu, run `.\scripts\sync_chutes_user_env.ps1` once, then fully restart Cursor.
 
 ### Agent usage pattern
 
@@ -294,6 +297,8 @@ chutes-agent-toolkit/
 │   └── llms-txt-review.md
 ├── evals/ (evals.json, README.md)
 ├── scripts/run_evals.py
+├── scripts/export_chutes_env.ps1
+├── scripts/sync_chutes_user_env.ps1
 ├── tests/ (test_manage_credentials.py, test_run_evals.py)
 ├── LICENSE
 └── README.md
@@ -321,12 +326,17 @@ Eval tooling:
 - `evals/evals.json`
 - `evals/README.md`
 - `scripts/run_evals.py`
+- `scripts/run_goal_gates.py`
+- `scripts/verify_autonomous_workflow.py`
+- `scripts/run_autonomous_workflow.ps1`
 
 Useful planning docs:
 - `docs/roadmap.md`
 - `docs/hermes-integration-spec.md`
 - `docs/chutes-maxi-proposal.md`
 - `docs/credential-store.md`
+- `docs/autonomous-workflow.md`
+- `docs/goal-mode-checklist.json`
 
 ## License
 

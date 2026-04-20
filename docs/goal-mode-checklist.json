@@ -1,0 +1,65 @@
+{
+  "name": "goal_mode_checklist",
+  "version": 1,
+  "description": "Mandatory pass/fail gates for goal-driven autonomous execution.",
+  "required_sequence": [
+    "goal_captured",
+    "plan_presented",
+    "approval_received",
+    "execution_completed",
+    "verification_completed",
+    "final_reported"
+  ],
+  "gates": [
+    {
+      "id": "goal_captured",
+      "type": "conversation",
+      "required": true,
+      "pass_when": "The target end product and explicit constraints are restated."
+    },
+    {
+      "id": "plan_presented",
+      "type": "conversation",
+      "required": true,
+      "pass_when": "A milestone plan and validation strategy are shown before execution."
+    },
+    {
+      "id": "approval_received",
+      "type": "conversation",
+      "required": true,
+      "pass_when": "User gives explicit approval to execute."
+    },
+    {
+      "id": "eval_pack_valid",
+      "type": "command",
+      "required": true,
+      "command": "python scripts/run_evals.py --format summary",
+      "expect_exit_code": 0
+    },
+    {
+      "id": "execution_completed",
+      "type": "conversation",
+      "required": true,
+      "pass_when": "Planned milestones have been executed or intentionally descoped with explanation."
+    },
+    {
+      "id": "verification_completed",
+      "type": "conversation",
+      "required": true,
+      "pass_when": "Verification evidence is shown (tests/self-check/tool output summary)."
+    },
+    {
+      "id": "final_reported",
+      "type": "conversation",
+      "required": true,
+      "pass_when": "Final report includes outcome, checklist table, and residual risks."
+    },
+    {
+      "id": "mcp_self_check",
+      "type": "command",
+      "required": false,
+      "command": "chutes-mcp-server --self-check",
+      "expect_exit_code": 0
+    }
+  ]
+}

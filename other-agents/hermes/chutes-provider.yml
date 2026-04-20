@@ -1,0 +1,8 @@
+# Hermes custom provider for Chutes.ai
+# Secrets are read via $CHUTES_API_KEY — do NOT paste the cpk_ value here.
+custom_providers:
+  - name: Chutes
+    base_url: https://llm.chutes.ai/v1
+    key_env: CHUTES_API_KEY
+    api_mode: chat_completions
+    model: default
