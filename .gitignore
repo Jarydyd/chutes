@@ -8,3 +8,40 @@ __pycache__/
 
 # Hermes local planning artifacts
 .hermes/
+
+# Local secrets and sensitive files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+credentials.json
+tokens.json
+secrets/
+
+# Local Chutes / agent state
+.chutes/
+
+# Local Cursor MCP overrides (toolkit may ship an example; keep local config private)
+.cursor/mcp.json
+
+# Agent workflow artifacts
+.agent/evidence/*.local.*
+.agent/tmp/
+.agent/logs/
+logs/
+*.log
+*.jsonl
+
+# Virtual environments
+.venv/
+venv/
+
+# Builds / packages / frontend
+dist/
+build/
+*.egg-info/
+node_modules/
+.next/

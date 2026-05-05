@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Require eval summary + goal gates before accepting completion."""
+"""Require eval summary, goal evidence, and goal gates before accepting completion."""
 
 from __future__ import annotations
 
@@ -20,6 +20,11 @@ def main() -> int:
         action="store_true",
         help="Include optional command gates (e.g., MCP self-check).",
     )
+    p.add_argument(
+        "--evidence",
+        default=".agent/evidence/latest.json",
+        help="Goal evidence JSON passed to run_goal_gates.py",
+    )
     args = p.parse_args()
 
     steps = [
@@ -31,6 +36,8 @@ def main() -> int:
             "docs/goal-mode-checklist.json",
             "--evals",
             "evals/evals.json",
+            "--evidence",
+            args.evidence,
         ],
     ]
     if args.run_optional:
@@ -42,7 +49,10 @@ def main() -> int:
             print(f"\nFAILED: {' '.join(cmd)}", file=sys.stderr)
             return rc
 
-    print("\nAutonomous workflow checks PASSED.")
+    print(
+        "\nAutonomous workflow static checks PASSED. "
+        "This does not prove the implementation is correct; add project tests/build gates as needed."
+    )
     return 0
 
 

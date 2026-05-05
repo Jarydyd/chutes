@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chutes.ai/agent-toolkit/goal-evidence.schema.json",
+  "title": "Goal-mode workflow evidence",
+  "description": "Machine-readable record that plan/approval/execution/verification gates were documented for a session. Validated by scripts/validate_goal_evidence.py.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "goal_captured",
+    "plan_presented",
+    "approval_received",
+    "execution_completed",
+    "verification_completed",
+    "final_reported",
+    "goal",
+    "approved_plan_summary",
+    "changed_files",
+    "commands_run",
+    "test_results",
+    "known_limitations"
+  ],
+  "properties": {
+    "goal_captured": { "type": "boolean", "const": true },
+    "plan_presented": { "type": "boolean", "const": true },
+    "approval_received": { "type": "boolean", "const": true },
+    "execution_completed": { "type": "boolean", "const": true },
+    "verification_completed": { "type": "boolean", "const": true },
+    "final_reported": { "type": "boolean", "const": true },
+    "goal": { "type": "string", "minLength": 1 },
+    "approved_plan_summary": { "type": "string", "minLength": 1 },
+    "changed_files": { "type": "array", "items": { "type": "string" } },
+    "commands_run": { "type": "array", "items": { "type": "string" } },
+    "test_results": { "type": "array", "items": { "type": "string" } },
+    "known_limitations": { "type": "array", "items": { "type": "string" } }
+  }
+}

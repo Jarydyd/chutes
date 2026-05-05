@@ -9,7 +9,7 @@ Service are unavailable). Non-secret metadata lives in ~/.chutes/config (INI, ch
 Commands:
   set-profile   Save or update a full credential profile
   set           Update a single field in a profile
-  get           Read a credential field (raw value to stdout)
+  get           Read a credential field, or full profile as JSON (secrets redacted unless --reveal)
   list-profiles List all configured profiles
   delete        Remove a profile and its secrets
   check         Show status without revealing secrets
@@ -62,6 +62,15 @@ def env_override_value(field: str) -> Optional[str]:
         if val:
             return val
     return None
+
+
+def redact_secret_for_display(value: str) -> str:
+    """Non-destructive redaction for human/display JSON (not for --field machine reads)."""
+    if not value:
+        return ""
+    if len(value) < 8:
+        return "***"
+    return f"{value[:4]}...{value[-4:]}"
 
 
 # ---------------------------------------------------------------------------
@@ -481,14 +490,20 @@ def cmd_get(args):
             sys.exit(1)
         print(val)
     else:
-        # Return all fields as JSON (secrets + metadata)
+        # Return all fields as JSON (metadata + secrets; secrets redacted unless --reveal)
         result = {}
         if cp.has_section(profile):
             for key in METADATA_FIELDS:
                 val = cp.get(profile, key, fallback=None)
                 if val:
                     result[key] = val
-        result.update(secrets)
+        for key, val in secrets.items():
+            if not val:
+                continue
+            if key in SECRET_FIELDS and not getattr(args, "reveal", False):
+                result[key] = redact_secret_for_display(val)
+            else:
+                result[key] = val
         print(json.dumps(result, indent=2))
 
 
@@ -579,6 +594,7 @@ def main():
     sp.add_argument("--api-key", dest="api_key", default=None, help="API key (cpk_...)")
     sp.add_argument("--client-id", dest="client_id", default=None, help="OAuth client ID (cid_...)")
     sp.add_argument("--client-secret", dest="client_secret", default=None, help="OAuth client secret (csc_...)")
+    sp.add_argument("--app-id", dest="app_id", default=None, help="OAuth / Chutes app id (UUID)")
 
     # set
     sp = sub.add_parser("set", help="Update a single field")
@@ -587,9 +603,14 @@ def main():
     sp.add_argument("--value", required=True, help="Field value")
 
     # get
-    sp = sub.add_parser("get", help="Read a credential field")
+    sp = sub.add_parser("get", help="Read a credential field or full profile JSON")
     sp.add_argument("--profile", default=None, help="Profile name")
-    sp.add_argument("--field", default=None, help="Specific field (omit for all as JSON)")
+    sp.add_argument("--field", default=None, help="Specific field (raw value; required for script use of api_key, etc.)")
+    sp.add_argument(
+        "--reveal",
+        action="store_true",
+        help="With no --field, include full secret values in JSON (default: redact secret fields)",
+    )
 
     # list-profiles
     sub.add_parser("list-profiles", help="List configured profiles")

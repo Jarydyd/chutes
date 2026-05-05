@@ -105,6 +105,7 @@ def test_cmd_set_profile_persists_metadata_and_secrets(manage_credentials_module
             fingerprint=None,
             client_id=None,
             client_secret=None,
+            app_id=None,
         )
     )
 
@@ -138,6 +139,7 @@ def test_cmd_set_profile_merges_existing_secret_fields(manage_credentials_module
             fingerprint=None,
             client_id=None,
             client_secret=None,
+            app_id=None,
         )
     )
 
@@ -185,6 +187,7 @@ def test_cmd_delete_removes_profile_and_secrets(manage_credentials_module, monke
             fingerprint=None,
             client_id=None,
             client_secret=None,
+            app_id=None,
         )
     )
     capsys.readouterr()
@@ -230,3 +233,60 @@ def test_cmd_check_reports_encrypted_store_status(manage_credentials_module, cap
     assert payload["encrypted_file_exists"] is True
     if os.name != "nt":
         assert payload["encrypted_file_secure"] is True
+
+
+def test_redact_secret_for_display(manage_credentials_module):
+    module = manage_credentials_module
+    assert module.redact_secret_for_display("") == ""
+    assert module.redact_secret_for_display("short") == "***"
+    assert module.redact_secret_for_display("longsecretval") == "long...tval"
+
+
+def test_cmd_get_full_profile_redacts_secrets(manage_credentials_module, monkeypatch, capsys):
+    module = manage_credentials_module
+    monkeypatch.setattr(module, "detect_backend", lambda: "encrypted_file")
+    monkeypatch.setattr(
+        module,
+        "read_secrets",
+        lambda _b, _p: {"api_key": "cpk_abcdefghijklmnopqrst"},
+    )
+    module.ensure_chutes_dir()
+    cp = module.load_config()
+    cp.add_section("default")
+    cp.set("default", "backend", "encrypted_file")
+    cp.set("default", "username", "alice")
+    module.save_config(cp)
+
+    module.cmd_get(SimpleNamespace(profile="default", field=None, reveal=False))
+
+    out = json.loads(capsys.readouterr().out)
+    assert out["username"] == "alice"
+    assert "..." in out["api_key"]
+
+
+def test_cmd_set_profile_persists_app_id(manage_credentials_module, monkeypatch, capsys):
+    module = manage_credentials_module
+    stored = {}
+
+    monkeypatch.setattr(module, "detect_backend", lambda: "encrypted_file")
+    monkeypatch.setattr(module, "read_secrets", lambda backend, profile: stored.get(profile))
+
+    def fake_write_secrets(backend, profile, secrets):
+        stored[profile] = dict(secrets)
+
+    monkeypatch.setattr(module, "write_secrets", fake_write_secrets)
+
+    module.cmd_set_profile(
+        SimpleNamespace(
+            profile="default",
+            username=None,
+            user_id=None,
+            api_key=None,
+            fingerprint=None,
+            client_id=None,
+            client_secret=None,
+            app_id="00000000-0000-0000-0000-00000000aa99",
+        )
+    )
+
+    assert stored["default"] == {"app_id": "00000000-0000-0000-0000-00000000aa99"}

@@ -1,0 +1,14 @@
+{
+  "goal_captured": true,
+  "plan_presented": true,
+  "approval_received": true,
+  "execution_completed": true,
+  "verification_completed": true,
+  "final_reported": true,
+  "goal": "Example: document goal-mode evidence format for the toolkit (no live API usage).",
+  "approved_plan_summary": "Add schema, example, validator; wire into goal gates; keep scope minimal.",
+  "changed_files": [".agent/evidence/example.json", "scripts/validate_goal_evidence.py"],
+  "commands_run": ["python scripts/validate_goal_evidence.py --path .agent/evidence/example.json"],
+  "test_results": ["pytest tests/test_goal_evidence.py (when run locally)"],
+  "known_limitations": ["Evidence is self-attested; gates do not prove external systems behaved correctly."]
+}

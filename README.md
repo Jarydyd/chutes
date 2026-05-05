@@ -39,7 +39,7 @@ Exercised end-to-end against a real Chutes account during wave 2 (see `docs/chut
 
 - **`chutes-deploy`** — permanent BETA under the deploy-features policy. Wave-2 live verification found that the easy-deploy lanes (`POST /chutes/vllm`, `POST /chutes/diffusion`) are currently gated server-side with HTTP 403 `{"detail":"Easy deployment is currently disabled!"}` on at least some account classes. Scripts now surface a clear fall-back hint; `--revision` branch→SHA auto-resolve is in place (wave-1 passed `main` which Chutes rejected).
 - **`chutes-sign-in:verify_siwc.py`** — steps 1-3 (files / env / keychain) verified live; step 4 (dev server `/api/auth/chutes/session` hit) not yet exercised (requires `npm install` + `npm run dev`).
-- **`chutes-mcp-portability` write tools** — `chutes_deploy_vllm`, `chutes_deploy_diffusion`, `chutes_teeify`, `chutes_set_alias`, `chutes_delete_alias`, `chutes_create_api_key` stay permanent BETA under the deploy-features policy. The alias set/delete round-trip was functionally exercised in wave 2 (and the wave-1 schema bug — `{alias, model}` → `{alias, chute_ids}` — was caught and fixed), but deploy-side writes keep the label.
+- **`chutes-mcp-portability` write tools** — `chutes_deploy_vllm`, `chutes_deploy_diffusion`, `chutes_teeify`, `chutes_set_alias`, `chutes_delete_alias`, and `chutes_create_api_key` are **off by default**: set `CHUTES_ENABLE_DEPLOY_TOOLS=1`, `CHUTES_ENABLE_ALIAS_WRITES=1`, and/or `CHUTES_ENABLE_KEY_TOOLS=1` to allow those MCP calls. New API keys returned from `chutes_create_api_key` are redacted unless `CHUTES_ALLOW_SECRET_OUTPUT=1`. Tools remain BETA under the deploy-features policy.
 - **`chutes-mcp-portability` unexercised read tools** — `chutes_chat_complete` (paid), `chutes_get_evidence` (needs a chute_id), `chutes_oauth_introspect` (needs a live OAuth token).
 - **Wave-2 stubs** — `chutes-routing`, `chutes-usage-and-billing`, `chutes-platform-ops`, `chutes-agent-registration` — still stubs; fleshed out next in wave 2.
 
@@ -326,9 +326,11 @@ Eval tooling:
 - `evals/evals.json`
 - `evals/README.md`
 - `scripts/run_evals.py`
+- `scripts/validate_goal_evidence.py` / `.agent/evidence/` (goal-mode evidence JSON)
 - `scripts/run_goal_gates.py`
 - `scripts/verify_autonomous_workflow.py`
 - `scripts/run_autonomous_workflow.ps1`
+- `scripts/bootstrap_goal_mode_to_repo.ps1`
 
 Useful planning docs:
 - `docs/roadmap.md`
@@ -337,6 +339,7 @@ Useful planning docs:
 - `docs/credential-store.md`
 - `docs/autonomous-workflow.md`
 - `docs/goal-mode-checklist.json`
+- `docs/pilots/existing-repo-pilot-runbook.md`
 
 ## License
 

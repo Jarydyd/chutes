@@ -6,19 +6,25 @@
 .DESCRIPTION
   Runs the required autonomous workflow checks:
     1) eval pack summary validation
-    2) goal gate validation
+    2) goal gate validation (includes goal evidence JSON)
 
   Add -RunOptional to include optional gates (e.g. MCP self-check).
+
+  Use -Evidence to point at the goal evidence file (default: .agent/evidence/latest.json).
 #>
 param(
-    [switch]$RunOptional
+    [switch]$RunOptional,
+    [string]$Evidence = ".agent/evidence/latest.json"
 )
 
 $ErrorActionPreference = "Stop"
 $RepoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 Set-Location $RepoRoot
 
-$cmd = @("python", "scripts/verify_autonomous_workflow.py")
+$cmd = @(
+    "python", "scripts/verify_autonomous_workflow.py",
+    "--evidence", $Evidence
+)
 if ($RunOptional) { $cmd += "--run-optional" }
 
 Write-Host "Running autonomous workflow checks..." -ForegroundColor Cyan

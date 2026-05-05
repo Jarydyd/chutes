@@ -22,6 +22,7 @@ Secret fields:
 - `fingerprint`
 - `client_id`
 - `client_secret`
+- `app_id` (OAuth / Chutes app id)
 
 Non-secret metadata:
 - `username`
@@ -54,6 +55,8 @@ Fallback file path:
 - `~/.chutes/.keychain`
 
 This is weaker than platform keychains but still better than plaintext.
+
+The encrypted-file fallback reduces accidental plaintext exposure (for example in backups or accidental copies) but **does not** protect against malware, a malicious same-user process, or an attacker who can read files as your user. Treat it as a convenience barrier, not a hardware-backed vault.
 
 ## File-system security expectations
 
@@ -92,8 +95,11 @@ python manage_credentials.py get --profile default --field api_key
 
 ### Get all stored values for a profile
 
+By default, secret fields are **redacted** in the JSON (metadata such as `username` remains visible). Scripts should continue to use `get --field api_key` for machine-readable raw values. Use `--reveal` only when you intentionally need full JSON including secrets.
+
 ```bash
 python manage_credentials.py get --profile default
+python manage_credentials.py get --profile default --reveal
 ```
 
 ### List profiles

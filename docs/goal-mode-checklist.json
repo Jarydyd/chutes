@@ -33,7 +33,7 @@
       "id": "eval_pack_valid",
       "type": "command",
       "required": true,
-      "command": "python scripts/run_evals.py --format summary",
+      "command": ["python", "scripts/run_evals.py", "--format", "summary"],
       "expect_exit_code": 0
     },
     {
@@ -58,7 +58,7 @@
       "id": "mcp_self_check",
       "type": "command",
       "required": false,
-      "command": "chutes-mcp-server --self-check",
+      "command": ["chutes-mcp-server", "--self-check"],
       "expect_exit_code": 0
     }
   ]

@@ -15,8 +15,10 @@ Auth:
     falls back to `manage_credentials.py get --field fingerprint`
     then exchanges the fingerprint for a short-lived JWT via `POST /users/login`
 
-Write/deploy tools are marked [BETA] in their description and stay that
-way until an explicit verification pass exercises each one.
+Write/deploy tools are marked [BETA] and are **disabled by default** unless
+``CHUTES_ENABLE_DEPLOY_TOOLS``, ``CHUTES_ENABLE_ALIAS_WRITES``, and/or
+``CHUTES_ENABLE_KEY_TOOLS`` are set to ``1``. ``chutes_create_api_key`` redacts
+returned secrets unless ``CHUTES_ALLOW_SECRET_OUTPUT=1``.
 
 Run:
   chutes-mcp-server                 # stdio mode (for MCP clients)
@@ -47,6 +49,10 @@ except ImportError:  # pragma: no cover
 CHUTES_API_BASE = os.environ.get("CHUTES_API_BASE", "https://api.chutes.ai")
 CHUTES_INFER_BASE = os.environ.get("CHUTES_INFER_BASE", "https://llm.chutes.ai/v1")
 BETA_PREFIX = "[BETA] "
+
+from mcp_write_safety import redact_create_api_key_response as _redact_create_api_key_response
+from mcp_write_safety import write_tool_blocked as _write_tool_blocked
+from mcp_write_safety import writes_enabled as _writes_enabled
 
 
 def _manage_credentials_rel() -> Path:
@@ -270,6 +276,8 @@ def chutes_chat_complete(model: str, messages: list[dict], max_tokens: int = 512
 
 @app.tool(description=BETA_PREFIX + "Deploy a vLLM chute. WRITES: POST /chutes/vllm. Consumes paid compute.")
 def chutes_deploy_vllm(model: str, gpu: str = "h100", gpu_count: int = 1, name: Optional[str] = None, public: bool = False) -> dict:
+    if not _writes_enabled("CHUTES_ENABLE_DEPLOY_TOOLS"):
+        return _write_tool_blocked("chutes_deploy_vllm", "CHUTES_ENABLE_DEPLOY_TOOLS")
     body = {
         "name": name or f"mcp/{model.split('/')[-1].lower()}",
         "model": model,
@@ -281,6 +289,8 @@ def chutes_deploy_vllm(model: str, gpu: str = "h100", gpu_count: int = 1, name: 
 
 @app.tool(description=BETA_PREFIX + "Deploy a diffusion chute. WRITES: POST /chutes/diffusion. Consumes paid compute.")
 def chutes_deploy_diffusion(model: str, gpu: str = "a100_40gb", gpu_count: int = 1, name: Optional[str] = None, public: bool = False) -> dict:
+    if not _writes_enabled("CHUTES_ENABLE_DEPLOY_TOOLS"):
+        return _write_tool_blocked("chutes_deploy_diffusion", "CHUTES_ENABLE_DEPLOY_TOOLS")
     body = {
         "name": name or f"mcp/{model.split('/')[-1].lower()}",
         "model": model,
@@ -292,23 +302,32 @@ def chutes_deploy_diffusion(model: str, gpu: str = "a100_40gb", gpu_count: int =
 
 @app.tool(description=BETA_PREFIX + "Create a TEE variant of an existing affine chute. WRITES: PUT /chutes/{id}/teeify.")
 def chutes_teeify(chute_id: str) -> dict:
+    if not _writes_enabled("CHUTES_ENABLE_DEPLOY_TOOLS"):
+        return _write_tool_blocked("chutes_teeify", "CHUTES_ENABLE_DEPLOY_TOOLS")
     return _mgmt("PUT", f"/chutes/{chute_id}/teeify", body={})
 
 
 @app.tool(description=BETA_PREFIX + "Create a stable model alias pointing at one or more chute UUIDs. WRITES: POST /model_aliases/.")
 def chutes_set_alias(alias: str, chute_ids: list[str]) -> dict:
     """Create an alias. `chute_ids` is a list of chute UUIDs (not model names)."""
+    if not _writes_enabled("CHUTES_ENABLE_ALIAS_WRITES"):
+        return _write_tool_blocked("chutes_set_alias", "CHUTES_ENABLE_ALIAS_WRITES")
     return _mgmt("POST", "/model_aliases/", body={"alias": alias, "chute_ids": chute_ids})
 
 
 @app.tool(description=BETA_PREFIX + "Delete a model alias. WRITES: DELETE /model_aliases/{alias}.")
 def chutes_delete_alias(alias: str) -> dict:
+    if not _writes_enabled("CHUTES_ENABLE_ALIAS_WRITES"):
+        return _write_tool_blocked("chutes_delete_alias", "CHUTES_ENABLE_ALIAS_WRITES")
     return _mgmt("DELETE", f"/model_aliases/{alias}")
 
 
 @app.tool(description=BETA_PREFIX + "Create a new API key on the current account. WRITES: POST /api_keys/. The secret_key is returned ONCE.")
 def chutes_create_api_key(name: str, admin: bool = False) -> dict:
-    return _mgmt("POST", "/api_keys/", body={"name": name, "admin": admin})
+    if not _writes_enabled("CHUTES_ENABLE_KEY_TOOLS"):
+        return _write_tool_blocked("chutes_create_api_key", "CHUTES_ENABLE_KEY_TOOLS")
+    raw = _mgmt("POST", "/api_keys/", body={"name": name, "admin": admin})
+    return _redact_create_api_key_response(raw)
 
 
 # ---- Entry point ----
